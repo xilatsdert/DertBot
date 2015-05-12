@@ -15,19 +15,10 @@ public class DertTF {
 	
 	/*
 	 * TODO: 
-	 *       Create handling in the main class to load multi-sentence transformations.
-	 *       Handling for .locks and checking for a time stamp in them. After one minute, remove the locks.
-	 *		 
-	 *
-	 * Completed: Basic Class Setup: Created the three basic values for a tf.
-	 * Create a class to handle loading in a file with a designated species and description
-	 * 				
-	 *
+	 * 		Create a better locking method so we don't need to use a timer to keep users from flooding IRC with TFs.
 	 */
-	
-	
-	
-	//This constructor forms a TF object, a species, gender, and a description.
+
+	//This constructor forms a TF object: It has a species, gender, a description, and is told which array it belongs to.
 	public DertTF(String s, String g, String d, String m){
 		
 		species = s;
@@ -38,7 +29,6 @@ public class DertTF {
 	}
 	
 	//return the contents of the tf, for use in a description.
-	
 	public String getSpecies(){
 		return species;
 	}
@@ -58,10 +48,9 @@ public class DertTF {
 	}
 	
 	//get the TF values, and return a DertTf object
-	
 	public static DertTF getTF(String line){
 		//Splitter value for our CaratSV(Carat Seperated Value)
-		//each time we hit the '^' sign in the given lines, it is split into certain strings.
+		//each time we hit the '^' sign in the given lines, it is split into strings.
 		String splitter = "\\^";
 		
 		//Splitter that parses the read in line in the main class, and then chops it up.
@@ -76,16 +65,13 @@ public class DertTF {
 		
 		String description = splitted[3];
 		
-		///Then, we return a new DertTF type, containing a species, a gender, some description, and the array it belongs to.
-		//this below return code is out of order!
+		///Then, we return a new DertTF
 		return new DertTF(species, gender, description, array);
 	}
 	
-	//Each class has a default toString() method.
-	//I over-rode this one so it would print out what I wanted in a certain way.
+	//Overridden toString method - used for diagnostic purposes to ensure it is actually loading people.
 	@Override
 	public String toString() {
 		return species + " of gender " + gender + " selected";
-	}
-	
+	}	
 }
