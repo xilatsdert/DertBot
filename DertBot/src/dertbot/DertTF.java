@@ -19,6 +19,7 @@ public class DertTF {
 	 */
 
 	//This constructor forms a TF object: It has a species, gender, a description, and is told which array it belongs to.
+	//Rethink method of reading, do not use line reader.
 	public DertTF(String s, String g, String d, String m){
 		
 		species = s;

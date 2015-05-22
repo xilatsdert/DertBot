@@ -1,4 +1,5 @@
 package dertbot;
+
 //Java Imports
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -8,13 +9,15 @@ import java.util.Scanner;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
+import java.util.regex.*;
+
 
 //IRC bot imports
 import org.jibble.pircbot.*;
 
 //Each java file has a class named after it's file name, sans extension.
 //That extends keyword means that Dertbot inherits from the Pircbot Library/Class
-public class DertBot extends PircBot {
+public class DertBot extends PircBot implements Runnable {
 	
 	//TODO: 
 	//
@@ -34,7 +37,7 @@ public class DertBot extends PircBot {
 	//countdown control value
 	static boolean controltime = false;
 	
-	//place holders for categorized tf's. These should be added into a master array for #randtf, and each one 
+	//place holders for categorized tf's. These should be added into a master array for !randtf, and each one 
 	//given their own tf commands.	
 	//This is loaded into linked lists per species.
 
@@ -67,7 +70,7 @@ public class DertBot extends PircBot {
 	
 	
 	/*
-		Please additional tf lists here.
+		Please place additional tf lists here.
 	*/
 	
 	//Master generic TF ArrayList
@@ -105,7 +108,6 @@ public class DertBot extends PircBot {
 		{
 		
 			this.connect(server, port);
-		
 			this.joinChannel(room);
 
 		}
@@ -129,18 +131,19 @@ public class DertBot extends PircBot {
 		
 		//opening phrase
 		this.sendAction(room, "sputters and whirrs into life, before a plume of blue smoke escapes its interior!");
-		this.sendAction(room, "please type #help to get instructions in a private message!");
+		this.sendAction(room, "please type !help to get instructions in a private message!");
 		
 		Scanner input = new Scanner(System.in);
 		String message = input.nextLine();
 		
-		do
+		do //This does not kill the bot, this just makes it so you can't talk through it.
+			//might want to actually remove.
 		{
 			String send = message;
 			this.sendMessage(room, send);
 			message = input.nextLine();
 		}
-		while(!message.equals("stop"));
+		while(!message.equals("!stop"));
 	}
 	
 	//various test messages to induce incremental improvements.
@@ -148,88 +151,69 @@ public class DertBot extends PircBot {
 	@Override
 	public void onMessage(String channel, String sender, String login, String hostname, String message) {
 		
-		//This loads a random TF, and replaces the word sender with the name of the user initiating the change.
-		//this tf iterates via two dimensional arrays for a random tf.
-		 if (message.equalsIgnoreCase("#randtf"))
-		 {
-			 randomMainTF(channel, sender);
-		 }
-			
-		//hot reloading function. This will help us add new TF's on the fly.
-		 else if (message.equalsIgnoreCase("#reloadtf"))
-		 {	
-			//reload TF
-			reloadTF(channel, sender);
-		  }
+		//Not well implemented, turn into a switch case statement:
 		
-		 //Send to the user a listing of help files.
-		else if(message.equalsIgnoreCase("#help"))
+		String test = message.toLowerCase();
+
+		switch(test)
 		{
+			case "!randtf":
+				randomMainTF(channel, sender);
+				break;
 			
-			helpfile(channel, sender);		
+			case "!reloadTF":
+				reloadTF(channel, sender);
+				break;
+				
+			case "!help":
+				helpfile(channel,sender);
+				break;
+				
+			case "!list":
+				sendMessage(sender, "The currently loaded transformations are:");
+				tfList(channel, sender, catList);
+				tfList(channel, sender, dogList);
+				tfList(channel, sender, foxList);
+				tfList(channel, sender, horseList);
+				tfList(channel, sender, dragonList);
+				tfList(channel, sender, procyonList);
+				tfList(channel, sender, lapineList);
+				tfList(channel, sender, bovineList);
+				break;
+				
+			case "!kittytf":
+				randomSpeciesTF(catList, channel, sender);
+				break;
+				
+			case "!dogtf":
+				randomSpeciesTF(dogList, channel, sender);
+				break;
+				
+			case "!foxtf":
+				randomSpeciesTF(foxList, channel, sender);
+				break;
+				
+			case "!horsetf":
+				randomSpeciesTF(horseList, channel, sender);
+				break;
+				
+			case "!dragontf":
+				randomSpeciesTF(dragonList, channel, sender);
+				break;
+				
+			case "!raccooontf":
+				randomSpeciesTF(procyonList, channel, sender);
+				break;
+				
+			case "!bovinetf":
+				randomSpeciesTF(bovineList, channel, sender);
+				break;
+				
+			case "!lapinetf":
+				randomSpeciesTF(lapineList, channel, sender);
+				break;
 		}
-		 
-		//Send to the user a list of available forms.
-		else if(message.equalsIgnoreCase("#list"))
-		{
-			sendMessage(sender, "The current TF's lodaed are:");
-			tfList(channel, sender, catList);
-			tfList(channel, sender, dogList);
-			tfList(channel, sender, foxList);
-			tfList(channel, sender, horseList);
-			tfList(channel, sender, dragonList);
-			tfList(channel, sender, procyonList);
-			tfList(channel, sender, lapineList);
-			tfList(channel, sender, bovineList);
-		}
-		 
-		//actual TF's based on the linked lists. 
-		//if the message the bot recieves from IRC matches a certain command
-		//we call the tf command, with arguments for it's species. We then send it to the channel
-		//the command came from. The subject of the tf is the sender of the command.
-		else if(message.equalsIgnoreCase("#kittytf"))
-		{
-			
-			randomSpeciesTF(catList, channel, sender);
-		}
-		
-		else if(message.equalsIgnoreCase("#dogtf"))
-		{
-			randomSpeciesTF(dogList, channel, sender);
-		}
-		
-		else if(message.equalsIgnoreCase("#foxtf"))
-		{
-			randomSpeciesTF(foxList, channel, sender);
-		}
-		
-		else if(message.equalsIgnoreCase("#horsetf"))
-		{
-			randomSpeciesTF(horseList, channel, sender);
-		}
-			
-		else if(message.equalsIgnoreCase("#dragontf"))
-		{
-			randomSpeciesTF(dragonList, channel, sender);
-		}
-			
-		else if(message.equalsIgnoreCase("#raccoontf"))
-		{
-			randomSpeciesTF(procyonList, channel, sender);
-		}
-			
-		else if(message.equalsIgnoreCase("#bovinetf"))
-		{
-			randomSpeciesTF(bovineList, channel, sender);
-		}
-			
-		else if(message.equalsIgnoreCase("#lapinetf"))
-		{
-			randomSpeciesTF(lapineList, channel, sender);
-		}
-	}
-	
-	
+	}	
 	//Reload the tf's while the bot is in the chat room.
 	//This won't load any new species into the bot.
 	//Just new tf's of currently coded species saved in the LinkedLists.
@@ -278,6 +262,7 @@ public class DertBot extends PircBot {
 	
 	private void randomMainTF(String channel, String sender)
 	{
+		//refactor for readability.
 		if(Cooldown.countdown == false)
 		{
 			setMessageDelay(1000);
@@ -324,8 +309,10 @@ public class DertBot extends PircBot {
 		//the cooldown is complete.
 		else if(Cooldown.countdown == true)
 		{
-			setMessageDelay(7500);
-			sendAction(channel, "is still cooling down! Please wait!");
+			setMessageDelay(5000);
+			//sendAction(channel, "is still cooling down! Please wait!"); old cooldown logic
+			
+			this.sendMessage(sender, "Dertbot is cooling down, please wait.");
 		}
 	}
 	
@@ -333,17 +320,17 @@ public class DertBot extends PircBot {
 	private void helpfile(String channel, String sender)
 	{
 		sendMessage(sender, "In order to use dertBot, enter these commands in the main chatroom:");
-		sendMessage(sender, "#randtf: Activate a random tf. There is a 10 second cool down after this.");
-		sendMessage(sender, "#help: Obviously, you are looking at it.");
-		sendMessage(sender, "#list: This will PM a list of forms loaded.");
-		sendMessage(sender, "#kittytf: this selects a random cat TF.");
-		sendMessage(sender, "#dogtf: this selects a random canine TF.");
-		sendMessage(sender, "#horsetf: this selects a random horse TF.");
-		sendMessage(sender, "#dragontf: this selects a random dragon TF.");
-		sendMessage(sender, "#raccoontf: this selects a random raccoon TF.");
-		sendMessage(sender, "#foxtf: this selects a random fox tf.");
-		sendMessage(sender, "#lapinetf: this selects a random bunny tf.");
-		sendMessage(sender, "#bovinetf: this selects a random cow tf.");
+		sendMessage(sender, "!randtf: Activate a random tf. There is a 10 second cool down after this.");
+		sendMessage(sender, "!help: Obviously, you are looking at it.");
+		sendMessage(sender, "!list: This will PM a list of forms loaded.");
+		sendMessage(sender, "!kittytf: this selects a random cat TF.");
+		sendMessage(sender, "!dogtf: this selects a random canine TF.");
+		sendMessage(sender, "!horsetf: this selects a random horse TF.");
+		sendMessage(sender, "!dragontf: this selects a random dragon TF.");
+		sendMessage(sender, "!raccoontf: this selects a random raccoon TF.");
+		sendMessage(sender, "!foxtf: this selects a random fox tf.");
+		sendMessage(sender, "!lapinetf: this selects a random bunny tf.");
+		sendMessage(sender, "!bovinetf: this selects a random cow tf.");
 	}
 	
 	//Give a list of all the available tf's, per array
@@ -360,6 +347,7 @@ public class DertBot extends PircBot {
 	{
 		
 		//read in the lines from the specified files in the file array, and then fill them into the mentioned DertTF object array.
+		// Reword
 		try {
 			read = new Scanner(file);
 			if(read.hasNextLine() == true)
@@ -419,7 +407,7 @@ private void randomSpeciesTF(List<DertTF> array, String channel, String sender)
 		fixed = description.replaceAll("[Ss]ender", user);
 		
 		//sends out put to let the user know what we selected!
-		sendMessage(channel, array.get(selection).toString());
+		//sendMessage(channel, array.get(selection).toString());
 		
 		//send out an action event to describe the TF.
 		sendAction(channel, fixed);
@@ -435,8 +423,13 @@ private void randomSpeciesTF(List<DertTF> array, String channel, String sender)
 	
 	else if(Cooldown.countdown == true)
 	{
-		setMessageDelay(7500);
-		sendAction(channel, "is still cooling down! Please wait!");
+		setMessageDelay(2500);
+		sendAction(sender, "is still cooling down! Please wait!");
 	}
   }
+
+@Override
+public void run() {
+
+}
 }
